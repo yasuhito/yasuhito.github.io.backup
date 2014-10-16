@@ -9,3 +9,8 @@ gem "middleman-blog", "~> 3.5.3"
 gem "builder", "~> 3.0"
 
 gem 'middleman-deploy'
+
+gem 'middleman-livereload'
+gem 'bitters'
+gem 'bourbon'
+gem 'neat'
