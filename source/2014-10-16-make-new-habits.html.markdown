@@ -1,7 +1,7 @@
 ---
 title: 新しい習慣作り
 date: 2014-10-16 08:10 UTC
-tags: habits
+tags: habits, lift
 ---
 
 新しく習慣を作るのはむずかしいです. たとえば, 何か目標があってそのため
