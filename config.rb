@@ -111,4 +111,9 @@ activate :deploy do |deploy|
   # deploy.commit_message = 'custom-message'      # commit message (can be empty), default: Automated commit at `timestamp` by middleman-deploy `version`
 end
 
-set :site_title, 'Yasuhito Blog'
+set :site_title, 'Yasuhito Takamiya'
+
+set :twitter, 'https://twitter.com/yasuhito'
+set :facebook, 'https://www.facebook.com/yasuhito.takamiya'
+set :github, 'https://github.com/yasuhito'
+set :linkedin, 'https://www.linkedin.com/pub/yasuhito-takamiya/'
