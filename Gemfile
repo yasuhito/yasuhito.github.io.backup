@@ -17,5 +17,6 @@ gem 'bourbon'
 gem 'neat'
 
 gem 'slim'
+gem 'nokogiri'
 
 gem 'rails-assets-font-awesome', require: false

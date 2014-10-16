@@ -24,9 +24,9 @@ activate :blog do |blog|
   blog.calendar_template = "calendar.html"
 
   # Enable pagination
-  blog.paginate = true
-  blog.per_page = 8
-  blog.page_link = "page/{num}"
+  # blog.paginate = true
+  # blog.per_page = 10
+  # blog.page_link = "page/{num}"
 end
 
 page "/feed.xml", layout: false
@@ -112,6 +112,7 @@ activate :deploy do |deploy|
 end
 
 set :site_title, 'Yasuhito Takamiya'
+set :site_author, "Yasuhito Takamiya"
 
 set :twitter, 'https://twitter.com/yasuhito'
 set :facebook, 'https://www.facebook.com/yasuhito.takamiya'

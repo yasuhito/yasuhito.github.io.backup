@@ -6,8 +6,10 @@
 @import "base/base"; /* Bitters needs to be imported before Neat */
 @import "neat";
 
-@import "partials/header";
 @import "partials/layout";
+@import "partials/header";
+@import "partials/article";
+@import "partials/sidebar";
 @import "partials/footer";
 
 @import "font-awesome";

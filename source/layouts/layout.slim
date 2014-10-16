@@ -12,5 +12,23 @@ html
     header
       = partial "partials/header"
     div#main[role="main"]
-      = yield
+      article
+        - unless current_article.nil?
+          h1
+            = current_article.title
+          .tag-labels
+            - current_article.tags.each do |tag|
+              small.tag-label
+                = tag
+          hr
+          p
+            i.fa.fa-clock-o
+            span.posted-date
+              | Posted on
+              = current_article.date.strftime('%b %e, %Y')
+          hr
+        = yield
+      aside
+        = partial "partials/sidebar"
+    footer
       = partial "partials/footer"

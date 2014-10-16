@@ -1,29 +1,21 @@
 #main {
   @include outer-container;
-}
 
-ol {
-  font-size: 1em;
-  font-weight: 500;
-
-  li {
-    margin: .5em 0;
-
-    span {
-      display: inline-block;
-
-      &:before {
-        content: '/';
-        margin: 0 .3em;
-      }
+  article {
+    @include media($medium-screen-up) {
+      @include span-columns(3);
+    }
+    @include media($large-screen-up) {
+      @include span-columns(6);
     }
   }
-}
 
-.large-column {
-  @include span-columns(8 of 12);
-}
-
-.small-column {
-  @include span-columns(4 of 12);
+  aside {
+    @include media($medium-screen-up) {
+      @include span-columns(1);
+    }
+    @include media($large-screen-up) {
+      @include span-columns(2);
+    }
+  }
 }
