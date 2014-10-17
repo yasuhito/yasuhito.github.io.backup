@@ -8,7 +8,7 @@ tags: uc, ruby, programming, book
 
 SIMPLE という言語の小ステップ操作的意味論 (p.21) を Ruby で記述する。
 
-## 数字、足し算、かけ算、ブール値、< の意味論を Ruby で
+## 意味論を Ruby で
 
 重要な注意点 (p.22)
 
