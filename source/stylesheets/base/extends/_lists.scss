@@ -1,7 +1,8 @@
-ul {
-  @extend %default-ul;
-}
-
-ol {
-  @extend %default-ol;
+article {
+  ul {
+    @extend %default-ul;
+  }
+  ol {
+    @extend %default-ol;
+  }
 }
