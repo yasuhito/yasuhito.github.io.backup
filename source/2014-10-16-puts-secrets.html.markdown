@@ -16,7 +16,7 @@ tags: programming, ruby, puts
   複数スレッドでそれぞれ `puts` すると、スレッド実行がインターリーブし
   て次のように出力が混ざることがある。
 
-```
+```ruby
 t1 = Thread.new do
   10.times { puts 'apple' }
 end
@@ -27,7 +27,7 @@ end
 
 t2.join
 t1.join
-```ruby
+```
 
 実行結果:
 
@@ -46,7 +46,7 @@ apple
 解決方法は、ワザと最後に改行を入れてやる。こうすると `puts` が最後の改
 行を取り除き、出力を一つの `write` として処理するので混じらない。
 
-```
+```ruby
 t1 = Thread.new do
   10.times { puts "apple\n" }
 end
