@@ -1,41 +1,50 @@
 ---
-title: アンダースタンディング コンピュテーション 読書 1 日目
+title: アンダースタンディング コンピュテーション 1
 date: 2014-10-17 01:59 UTC
 tags: uc, ruby, programming, book
 ---
 
-今日からアンダースタンディング コンピュテーション (オライリー) を読みはじめた。
+今日からアンダースタンディング コンピュテーション (オライリー) を読みはじめた。第 1 章は Ruby 入門なので飛ばす。
+第 2 章では SIMPLE という言語の小ステップスタイルな操作的意味論 (p.21) を Ruby で記述する。
 
-SIMPLE という言語の小ステップ操作的意味論 (p.21) を Ruby で記述する。
-
-## 意味論を Ruby で
-
-重要な注意点 (p.22)
+操作的意味論を Ruby で記述する意義については p.22 に下の注意があった。
 
 > Ruby を使うことの大きな欠点は、単純な言語を説明するのにより複雑な言語を使っていることで、おそらく哲学的意義を損ねています。
 > 数学的規則は意味論の信頼できる記述であり、Ruby を使うのは数学的規則が意味することを理解しやすくするため、
 > であることを忘れないでください。
+
+### 数値とブール値
+
+数値やブール値は値なので簡約できない。これを表すのに `#reducible?` メソッドで `false` を返すようにしておく。
 
 ```ruby
 class Number < Struct.new(:value)
   def reducible?
     false
   end
+end
+```
 
-  def to_s
-    value.to_s
-  end
-
-  def inspect
-    "<<#{self}>>"
+```ruby
+class Boolean < Struct.new(:value)
+  def reducible?
+    false
   end
 end
+```
 
+### 足し算
+
+$$\frac{e\_1 \to e'\_1}
+       {e\_1 + e\_2 \to e'\_1 + e\_2}$$
+
+$$\frac{e\_2 \to e'\_2}
+       {v\_1 + e\_2 \to v\_1 + e'\_2}$$
+
+$$n\_1 + n\_2 \to n\ \mathsf{if}\ n = n\_1 + n\_2$$
+
+```ruby
 class Add < Struct.new(:left, :right)
-  def reducible?
-    true
-  end
-
   def reduce
     if left.reducible?
       Add.new(left.reduce, right)
@@ -45,21 +54,21 @@ class Add < Struct.new(:left, :right)
       Number.new(left.value + right.value)
     end
   end
-
-  def to_s
-    "#{left} + #{right}"
-  end
-
-  def inspect
-    "<<#{self}>>"
-  end
 end
+```
 
+### かけ算
+
+$$\frac{e\_1 \to e'\_1}
+       {e\_1 \ast e\_2 \to e'\_1 \ast e\_2}$$
+
+$$\frac{e\_2 \to e'\_2}
+       {v\_1 \ast e\_2 \to v\_1 \ast e'\_2}$$
+
+$$n\_1 \ast n\_2 \to n\ \mathsf{if}\ n = n\_1 \times n\_2$$
+
+```ruby
 class Multiply < Struct.new(:left, :right)
-  def reducible?
-    true
-  end
-
   def reduce
     if left.reducible?
       Multiply.new(left.reduce, right)
@@ -69,43 +78,23 @@ class Multiply < Struct.new(:left, :right)
       Number.new(left.value * right.value)
     end
   end
-
-  def to_s
-    "#{left} * #{right}"
-  end
-
-  def inspect
-    "<<#{self}>>"
-  end
 end
+```
 
-class Boolean < Struct.new(:value)
-  def to_s
-    value.to_s
-  end
+### Less than (<)
 
-  def inspect
-    "<<#{self}"
-  end
+$$\frac{e\_1 \to e'\_1}
+       {e\_1 < e\_2 \to e'\_1 < e\_2}$$
 
-  def reducible?
-    false
-  end
-end
+$$\frac{e\_2 \to e'\_2}
+       {v\_1 < e\_2 \to v\_1 < e'\_2}$$
 
+$$n\_1 < n\_2 \to \tt{true}\ \mathsf{if}\ n = n\_1 < n\_2$$
+
+$$n\_1 < n\_2 \to \tt{false}\ \mathsf{if}\ n = n\_1 \geq n\_2$$
+
+```ruby
 class LessThan < Struct.new(:left, :right)
-  def to_s
-    "#{left} < #{right}"
-  end
-
-  def inspect
-    "<<#{self}>>"
-  end
-
-  def reducible?
-    true
-  end
-
   def reduce
     if left.reducible?
       LessThan.new(left.reduce, right)
@@ -118,7 +107,9 @@ class LessThan < Struct.new(:left, :right)
 end
 ```
 
-次の仮想機械で言語を評価できる。
+### 仮想機械
+
+仮想機械はどんどん簡約していくだけ。シンプル。
 
 ```ruby
 class Machine < Struct.new(:expression)
@@ -136,31 +127,30 @@ class Machine < Struct.new(:expression)
 end
 ```
 
-## 変数
+---
 
-変数を簡約するために変数名から値へのマッピングとして環境を導入する。
+## 変数を使えるようにする
+
+変数を簡約するために、変数名から値へのマッピングとして環境を導入する。実装は `Hash` を使うだけ。
 
 ```ruby
 class Variable < Struct.new(:name)
   def reduce(environment)
     environment[name]
   end
-
-  def reducible?
-    true
-  end
-
-  def to_s
-    name.to_s
-  end
-
-  def inspect
-    "<<#{self}>>"
-  end
 end
 ```
 
 そして簡約できるモノの `#reduce` に環境を渡せるようにする。たとえば足し算はこんな感じ。
+
+$$\frac{\langle e\_1, \sigma \rangle \rightsquigarrow\_e e'\_1}
+       {\langle e\_1 + e\_2, \sigma \rangle \rightsquigarrow\_e e'\_1 + e\_2}$$
+
+$$\frac{\langle e\_2, \sigma \rangle \rightsquigarrow\_e e'\_2}
+       {\langle v\_1 + e\_2, \sigma \rangle \rightsquigarrow\_e v\_1 + e'\_2}$$
+
+$$\frac{}
+       {\langle n\_1 + n\_2, \sigma \rangle \rightsquigarrow\_e n} \mathsf{if} n = n\_1 + n\_2$$
 
 ```ruby
 class Add < Struct.new(:left, :right)
@@ -172,18 +162,6 @@ class Add < Struct.new(:left, :right)
     else
       Number.new(left.value + right.value)
     end
-  end
-
-  def reducible?
-    true
-  end
-
-  def to_s
-    "#{left} + #{right}"
-  end
-
-  def inspect
-    "<<#{self}>>"
   end
 end
 ```
