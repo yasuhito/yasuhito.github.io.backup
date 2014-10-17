@@ -1,0 +1,189 @@
+---
+title: アンダースタンディング コンピュテーション 読書 1 日目
+date: 2014-10-17 01:59 UTC
+tags: uc, ruby, programming, book
+---
+
+今日からアンダースタンディング コンピュテーション (オライリー) を読みはじめた。
+
+SIMPLE という言語の小ステップ操作的意味論 (p.21) を Ruby で記述する。
+
+## 数字、足し算、かけ算、ブール値、< の意味論を Ruby で
+
+重要な注意点 (p.22)
+
+> Ruby を使うことの大きな欠点は、単純な言語を説明するのにより複雑な言語を使っていることで、おそらく哲学的意義を損ねています。
+> 数学的規則は意味論の信頼できる記述であり、Ruby を使うのは数学的規則が意味することを理解しやすくするため、
+> であることを忘れないでください。
+
+```ruby
+class Number < Struct.new(:value)
+  def reducible?
+    false
+  end
+
+  def to_s
+    value.to_s
+  end
+
+  def inspect
+    "<<#{self}>>"
+  end
+end
+
+class Add < Struct.new(:left, :right)
+  def reducible?
+    true
+  end
+
+  def reduce
+    if left.reducible?
+      Add.new(left.reduce, right)
+    elsif right.reducible?
+      Add.new(left, right.reduce)
+    else
+      Number.new(left.value + right.value)
+    end
+  end
+
+  def to_s
+    "#{left} + #{right}"
+  end
+
+  def inspect
+    "<<#{self}>>"
+  end
+end
+
+class Multiply < Struct.new(:left, :right)
+  def reducible?
+    true
+  end
+
+  def reduce
+    if left.reducible?
+      Multiply.new(left.reduce, right)
+    elsif right.reducible?
+      Multiply.new(left, right.reduce)
+    else
+      Number.new(left.value * right.value)
+    end
+  end
+
+  def to_s
+    "#{left} * #{right}"
+  end
+
+  def inspect
+    "<<#{self}>>"
+  end
+end
+
+class Boolean < Struct.new(:value)
+  def to_s
+    value.to_s
+  end
+
+  def inspect
+    "<<#{self}"
+  end
+
+  def reducible?
+    false
+  end
+end
+
+class LessThan < Struct.new(:left, :right)
+  def to_s
+    "#{left} < #{right}"
+  end
+
+  def inspect
+    "<<#{self}>>"
+  end
+
+  def reducible?
+    true
+  end
+
+  def reduce
+    if left.reducible?
+      LessThan.new(left.reduce, right)
+    elsif right.reducible?
+      LessThan.new(left, right.reduce)
+    else
+      Boolean.new(left.value < right.value)
+    end
+  end
+end
+```
+
+次の仮想機械で言語を評価できる。
+
+```ruby
+class Machine < Struct.new(:expression)
+  def step
+    self.expression = expression.reduce
+  end
+
+  def run
+    while expression.reducible?
+      puts expression
+      step
+    end
+    puts expression
+  end
+end
+```
+
+## 変数
+
+変数を簡約するために変数名から値へのマッピングとして環境を導入する。
+
+```ruby
+class Variable < Struct.new(:name)
+  def reduce(environment)
+    environment[name]
+  end
+
+  def reducible?
+    true
+  end
+
+  def to_s
+    name.to_s
+  end
+
+  def inspect
+    "<<#{self}>>"
+  end
+end
+```
+
+そして簡約できるモノの `#reduce` に環境を渡せるようにする。たとえば足し算はこんな感じ。
+
+```ruby
+class Add < Struct.new(:left, :right)
+  def reduce(environment)
+    if left.reducible?
+      Add.new(left.reduce(environment), right)
+    elsif right.reducible?
+      Add.new(left, right.reduce(environment))
+    else
+      Number.new(left.value + right.value)
+    end
+  end
+
+  def reducible?
+    true
+  end
+
+  def to_s
+    "#{left} + #{right}"
+  end
+
+  def inspect
+    "<<#{self}>>"
+  end
+end
+```
