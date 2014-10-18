@@ -57,6 +57,13 @@ class Add < Struct.new(:left, :right)
 end
 ```
 
+irb で実行するとこんな感じ。
+
+```
+>> Add.new(Number.new(3), Number.new(4)).reduce
+=> <<7>>
+```
+
 ### かけ算
 
 $$\frac{e\_1 \to e'\_1}
@@ -79,6 +86,15 @@ class Multiply < Struct.new(:left, :right)
     end
   end
 end
+```
+
+irb で実行するとこんな感じ。
+
+```
+>> Multiply.new(Add.new(Number.new(1), Number.new(2)), Number.new(3))
+=> <<1 + 2 * 3>>
+>> Multiply.new(Add.new(Number.new(1), Number.new(2)), Number.new(3)).reduce
+=> <<3 * 3>>
 ```
 
 ### Less than (<)
