@@ -16,7 +16,9 @@ class Variable < Struct.new(:name)
 end
 ```
 
-そして簡約できるモノの `#reduce` に環境を渡せるようにする。たとえば足し算はこんな感じ。
+そして簡約できる項の `#reduce` に環境を渡せるようにする。
+
+たとえば足し算はこんな感じ。
 
 $$\frac{\langle e\_1, \sigma \rangle \rightsquigarrow\_e e'\_1}
        {\langle e\_1 + e\_2, \sigma \rangle \rightsquigarrow\_e e'\_1 + e\_2}$$
@@ -24,8 +26,7 @@ $$\frac{\langle e\_1, \sigma \rangle \rightsquigarrow\_e e'\_1}
 $$\frac{\langle e\_2, \sigma \rangle \rightsquigarrow\_e e'\_2}
        {\langle v\_1 + e\_2, \sigma \rangle \rightsquigarrow\_e v\_1 + e'\_2}$$
 
-$$\frac{}
-       {\langle n\_1 + n\_2, \sigma \rangle \rightsquigarrow\_e n} \mathsf{if} n = n\_1 + n\_2$$
+$$\langle n\_1 + n\_2, \sigma \rangle \rightsquigarrow\_e n\ \mathsf{if}\ n = n\_1 + n\_2$$
 
 ```ruby
 class Add < Struct.new(:left, :right)
@@ -39,4 +40,64 @@ class Add < Struct.new(:left, :right)
     end
   end
 end
+```
+
+かけ算はこうなる。
+
+$$\frac{\langle e\_1, \sigma \rangle \rightsquigarrow\_e e'\_1}
+       {\langle e\_1 \ast e\_2, \sigma \rangle \rightsquigarrow\_e e'\_1 \ast e\_2}$$
+
+$$\frac{\langle e\_2, \sigma \rangle \rightsquigarrow\_e e'\_2}
+       {\langle v\_1 \ast e\_2, \sigma \rangle \rightsquigarrow\_e v\_1 \ast e'\_2}$$
+
+$$\langle n\_1 \ast n\_2, \sigma \rangle \rightsquigarrow\_e n\ \mathsf{if}\ n = n\_1 \times n\_2$$
+
+```ruby
+class Multiply
+  def reduce(environment)
+    if left.reducible?
+      Multiply.new(left.reduce(environment), right)
+    elsif right.reducible?
+      Multiply.new(left, right.reduce(environment))
+    else
+      Number.new(left.value * right.value)
+    end
+  end
+end
+```
+
+less than (<) はこう。
+
+$$\frac{\langle e\_1, \sigma \rangle \rightsquigarrow\_e e'\_1}
+       {\langle e\_1 < e\_2, \sigma \rangle \rightsquigarrow\_e e'\_1 < e\_2}$$
+
+$$\frac{\langle e\_2, \sigma \rangle \rightsquigarrow\_e e'\_2}
+       {\langle v\_1 < e\_2, \sigma \rangle \rightsquigarrow\_e v\_1 < e'\_2}$$
+
+$$\langle n\_1 < n\_2, \sigma \rangle \rightsquigarrow\_e \tt{true}\ \mathsf{if}\ n\_1 < n\_2$$
+
+$$\langle n\_1 < n\_2, \sigma \rangle \rightsquigarrow\_e \tt{false}\ \mathsf{if}\ n\_1 \geq n\_2$$
+
+```ruby
+class Reduce
+  def reduce(environment)
+    if left.reducible?
+      LessThan(left.reduce(environment), right)
+    elsif right.reducible?
+      LessThan(left, right.reduce(environment))
+    else
+      Boolean.new(left.value < right.value)
+    end
+  end
+end
+```
+
+### 仮想機械が環境を持てるようにする
+
+```ruby
+class Machine < Struct.new(:expression, :environment)
+  def step
+    self.expression = expression.reduce(environment)
+  end
+end  
 ```
