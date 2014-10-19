@@ -6,7 +6,11 @@ tags: uc, ruby, programming, book
 
 ## 変数を使えるようにする
 
-変数を簡約するために、変数名から値へのマッピングとして環境を導入する。実装は `Hash` を使うだけ。
+変数を簡約するために、変数名から値へのマッピングとして環境を導入する。
+
+$$\langle x, \sigma \rangle \rightsquigarrow\_e \sigma(x)\ if\ x \in dom(\sigma)$$
+
+実装は `Hash` を使うだけ。
 
 ```ruby
 class Variable < Struct.new(:name)
