@@ -1,9 +1,10 @@
 header {
   $header-background-top: darken($base-accent-color, 25);
   $header-background-bottom: adjust-hue($header-background-top, -70);
-  $header-color: #d9d9d9;
+  // $header-color: #d9d9d9;
+  $header-color: #1d2514;
   $gradient-angle: 10deg;
-  $header-image: "/images/mountains.png";
+  $header-image: "/images/grunge.png";
 
   @include background(url($header-image), linear-gradient($gradient-angle, $header-background-bottom, $header-background-top), no-repeat $header-background-top scroll);
 
@@ -25,8 +26,8 @@ header {
 
   h1 {
     font-size: 24px;
-    font-weight: 100;
-    text-shadow: 0 0 12px lighten($header-color, 10);
+    font-weight: 200;
+    // text-shadow: 0 0 12px lighten($header-color, 10);
     padding: 10px 0 4px 0;
 
     @include media($medium-screen-up) {
