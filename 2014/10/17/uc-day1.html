@@ -1,0 +1,128 @@
+<!DOCTYPE html><html><head><meta charset="utf-8" /><meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible" /><title>Yasuhito Takamiya - アンダースタンディング コンピュテーション 1</title><script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+<link href="../../../stylesheets/all.css" rel="stylesheet" type="text/css" /><script src="../../../javascripts/all.js" type="text/javascript"></script></head><body><header><h1><a href="/">Yasuhito Takamiya</a></h1><ul class="header-social"><li><a href="https://twitter.com/yasuhito"><i class="fa fa-twitter-square"></i></a></li><li><a href="https://www.facebook.com/yasuhito.takamiya"><i class="fa fa-facebook-square"></i></a></li><li><a href="https://github.com/yasuhito"><i class="fa fa-github"></i></a></li><li><a href="https://www.linkedin.com/pub/yasuhito-takamiya/"><i class="fa fa-linkedin-square"></i></a></li></ul></header><div id="main" role="main"><article><h1>アンダースタンディング コンピュテーション 1</h1><div class="tag-labels"><small class="tag-label">uc</small><small class="tag-label">ruby</small><small class="tag-label">programming</small><small class="tag-label">book</small></div><hr /><p><i class="fa fa-clock-o"></i><span class="posted-date">Posted onOct 17, 2014</span></p><hr /><p>今日からアンダースタンディング コンピュテーション (オライリー) を読みはじめた。第 1 章は Ruby 入門なので飛ばす。
+第 2 章では SIMPLE という言語の小ステップスタイルな操作的意味論 (p.21) を Ruby で記述する。</p>
+
+<p>操作的意味論を Ruby で記述する意義については p.22 に下の注意があった。</p>
+
+<blockquote>
+<p>Ruby を使うことの大きな欠点は、単純な言語を説明するのにより複雑な言語を使っていることで、おそらく哲学的意義を損ねています。
+数学的規則は意味論の信頼できる記述であり、Ruby を使うのは数学的規則が意味することを理解しやすくするため、
+であることを忘れないでください。</p>
+</blockquote>
+
+<h3>数値とブール値</h3>
+
+<p>数値やブール値は値なので簡約できない。これを表すのに <code>#reducible?</code> メソッドで <code>false</code> を返すようにしておく。</p>
+<pre class="highlight ruby"><code><span class="k">class</span> <span class="nc">Number</span> <span class="o">&lt;</span> <span class="no">Struct</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">:value</span><span class="p">)</span>
+  <span class="k">def</span> <span class="nf">reducible?</span>
+    <span class="kp">false</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<pre class="highlight ruby"><code><span class="k">class</span> <span class="nc">Boolean</span> <span class="o">&lt;</span> <span class="no">Struct</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">:value</span><span class="p">)</span>
+  <span class="k">def</span> <span class="nf">reducible?</span>
+    <span class="kp">false</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+
+<h3>足し算</h3>
+
+<p>$$\frac{e_1 \to e&rsquo;_1}
+       {e_1 + e_2 \to e&rsquo;_1 + e_2}$$</p>
+
+<p>$$\frac{e_2 \to e&rsquo;_2}
+       {v_1 + e_2 \to v_1 + e&rsquo;_2}$$</p>
+
+<p>$$n_1 + n_2 \to n\ \mathsf{if}\ n = n_1 + n_2$$</p>
+<pre class="highlight ruby"><code><span class="k">class</span> <span class="nc">Add</span> <span class="o">&lt;</span> <span class="no">Struct</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">:left</span><span class="p">,</span> <span class="ss">:right</span><span class="p">)</span>
+  <span class="k">def</span> <span class="nf">reduce</span>
+    <span class="k">if</span> <span class="n">left</span><span class="p">.</span><span class="nf">reducible?</span>
+      <span class="no">Add</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">left</span><span class="p">.</span><span class="nf">reduce</span><span class="p">,</span> <span class="n">right</span><span class="p">)</span>
+    <span class="k">elsif</span> <span class="n">right</span><span class="p">.</span><span class="nf">reducible?</span>
+      <span class="no">Add</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">.</span><span class="nf">reduce</span><span class="p">)</span>
+    <span class="k">else</span>
+      <span class="no">Number</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">left</span><span class="p">.</span><span class="nf">value</span> <span class="o">+</span> <span class="n">right</span><span class="p">.</span><span class="nf">value</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+
+<p>irb で実行するとこんな感じ。</p>
+<pre class="highlight plaintext"><code>&gt;&gt; Add.new(Number.new(3), Number.new(4)).reduce
+=&gt; &lt;&lt;7&gt;&gt;
+</code></pre>
+
+<h3>かけ算</h3>
+
+<p>$$\frac{e_1 \to e&rsquo;_1}
+       {e_1 \ast e_2 \to e&rsquo;_1 \ast e_2}$$</p>
+
+<p>$$\frac{e_2 \to e&rsquo;_2}
+       {v_1 \ast e_2 \to v_1 \ast e&rsquo;_2}$$</p>
+
+<p>$$n_1 \ast n_2 \to n\ \mathsf{if}\ n = n_1 \times n_2$$</p>
+<pre class="highlight ruby"><code><span class="k">class</span> <span class="nc">Multiply</span> <span class="o">&lt;</span> <span class="no">Struct</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">:left</span><span class="p">,</span> <span class="ss">:right</span><span class="p">)</span>
+  <span class="k">def</span> <span class="nf">reduce</span>
+    <span class="k">if</span> <span class="n">left</span><span class="p">.</span><span class="nf">reducible?</span>
+      <span class="no">Multiply</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">left</span><span class="p">.</span><span class="nf">reduce</span><span class="p">,</span> <span class="n">right</span><span class="p">)</span>
+    <span class="k">elsif</span> <span class="n">right</span><span class="p">.</span><span class="nf">reducible?</span>
+      <span class="no">Multiply</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">.</span><span class="nf">reduce</span><span class="p">)</span>
+    <span class="k">else</span>
+      <span class="no">Number</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">left</span><span class="p">.</span><span class="nf">value</span> <span class="o">*</span> <span class="n">right</span><span class="p">.</span><span class="nf">value</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+
+<p>irb で実行するとこんな感じ。</p>
+<pre class="highlight plaintext"><code>&gt;&gt; Multiply.new(Add.new(Number.new(1), Number.new(2)), Number.new(3))
+=&gt; &lt;&lt;1 + 2 * 3&gt;&gt;
+&gt;&gt; Multiply.new(Add.new(Number.new(1), Number.new(2)), Number.new(3)).reduce
+=&gt; &lt;&lt;3 * 3&gt;&gt;
+</code></pre>
+
+<h3>Less than (&lt;)</h3>
+
+<p>$$\frac{e_1 \to e&rsquo;_1}
+       {e_1 &lt; e_2 \to e&rsquo;_1 &lt; e_2}$$</p>
+
+<p>$$\frac{e_2 \to e&rsquo;_2}
+       {v_1 &lt; e_2 \to v_1 &lt; e&rsquo;_2}$$</p>
+
+<p>$$n_1 &lt; n_2 \to \tt{true}\ \mathsf{if}\ n = n_1 &lt; n_2$$</p>
+
+<p>$$n_1 &lt; n_2 \to \tt{false}\ \mathsf{if}\ n = n_1 \geq n_2$$</p>
+<pre class="highlight ruby"><code><span class="k">class</span> <span class="nc">LessThan</span> <span class="o">&lt;</span> <span class="no">Struct</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">:left</span><span class="p">,</span> <span class="ss">:right</span><span class="p">)</span>
+  <span class="k">def</span> <span class="nf">reduce</span>
+    <span class="k">if</span> <span class="n">left</span><span class="p">.</span><span class="nf">reducible?</span>
+      <span class="no">LessThan</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">left</span><span class="p">.</span><span class="nf">reduce</span><span class="p">,</span> <span class="n">right</span><span class="p">)</span>
+    <span class="k">elsif</span> <span class="n">right</span><span class="p">.</span><span class="nf">reducible?</span>
+      <span class="no">LessThan</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">.</span><span class="nf">reduce</span><span class="p">)</span>
+    <span class="k">else</span>
+      <span class="no">Boolean</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">left</span><span class="p">.</span><span class="nf">value</span> <span class="o">&lt;</span> <span class="n">right</span><span class="p">.</span><span class="nf">value</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+
+<h3>仮想機械</h3>
+
+<p>仮想機械はどんどん簡約していくだけ。シンプル。</p>
+<pre class="highlight ruby"><code><span class="k">class</span> <span class="nc">Machine</span> <span class="o">&lt;</span> <span class="no">Struct</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">:expression</span><span class="p">)</span>
+  <span class="k">def</span> <span class="nf">step</span>
+    <span class="nb">self</span><span class="p">.</span><span class="nf">expression</span> <span class="o">=</span> <span class="n">expression</span><span class="p">.</span><span class="nf">reduce</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">run</span>
+    <span class="k">while</span> <span class="n">expression</span><span class="p">.</span><span class="nf">reducible?</span>
+      <span class="nb">puts</span> <span class="n">expression</span>
+      <span class="n">step</span>
+    <span class="k">end</span>
+    <span class="nb">puts</span> <span class="n">expression</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+</article><aside><fieldset><h2>Recent Articles</h2><ol><li><a href="/2015/05/25/openflow-instructions-actions.html">OpenFlowのインストラクションとアクション</a></li><li><a href="/2014/10/24/emacs-reboot.html">Emacs 24.4 のインストール</a></li><li><a href="/2014/10/19/uc-day3.html">アンダースタンディング コンピュテーション 3</a></li><li><a href="/2014/10/17/uc-day2.html">アンダースタンディング コンピュテーション 2</a></li><li><a href="/2014/10/17/uc-day1.html">アンダースタンディング コンピュテーション 1</a></li><li><a href="/2014/10/16/puts-secrets.html">puts の秘密</a></li><li><a href="/2014/10/16/make-new-habits.html">新しい習慣作り</a></li><li><a href="/2014/10/16/writing-a-compiler-in-ruby-bottom-up.html">Writing a compiler in Ruby, bottom up</a></li><li><a href="/2014/10/16/child-tidying.html">子供に楽しく片付けさせる方法</a></li></ol></fieldset><fieldset><h2>Tags</h2><ol><li><a href="/tags/tips.html">tips (1)</a></li><li><a href="/tags/kids.html">kids (1)</a></li><li><a href="/tags/habits.html">habits (1)</a></li><li><a href="/tags/lift.html">lift (1)</a></li><li><a href="/tags/programming.html">programming (5)</a></li><li><a href="/tags/ruby.html">ruby (5)</a></li><li><a href="/tags/puts.html">puts (1)</a></li><li><a href="/tags/compiler.html">compiler (1)</a></li><li><a href="/tags/uc.html">uc (3)</a></li><li><a href="/tags/book.html">book (3)</a></li><li><a href="/tags/emacs.html">emacs (1)</a></li><li><a href="/tags/emacs_reboot.html">emacs_reboot (1)</a></li><li><a href="/tags/openflow.html">openflow (1)</a></li><li><a href="/tags/trema.html">trema (1)</a></li></ol></fieldset><fieldset><h2>By Year</h2><ol><li><a href="/2015.html">2015 (1)</a></li><li><a href="/2014.html">2014 (8)</a></li></ol></fieldset></aside></div><footer><p><i class="fa fa-copyright"></i> <a href="/">Yasuhito Takamiya</a> - Yasuhito Takamiya</p></footer></body></html>
